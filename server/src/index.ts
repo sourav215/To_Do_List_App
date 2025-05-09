@@ -29,13 +29,6 @@ app.use((req: Request, res: Response) => {
 // Error-handling middleware
 app.use(timeoutError);
 
-app.use("/", (req: Request, res: Response) => {
-  res.json({
-    isSuccess: true,
-    message: "Server is Running",
-    data: process.env.PORT,
-  });
-});
 
 app.listen(CONFIG.PORT, async () => {
   try {
