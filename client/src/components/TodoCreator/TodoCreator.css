@@ -1,12 +1,20 @@
 .react-datepicker {
   border-radius: 0.5rem;
   font-family: inherit;
+  border: 1px solid #0ec8d4 !important;
 }
 .react-datepicker__header {
-  background-color: #facc15;
+  background-color: #0ec8d4 !important;
+  color: #fff !important;
+}
+.react-datepicker__day-name {
+  color: #fff !important;
+}
+.react-datepicker__current-month {
+  color: #fff !important;
 }
 .react-datepicker__day--selected {
-  background-color: #f59e0b;
+  background-color: #0ec8d4 !important;
   color: white;
 }
 

@@ -1,43 +1,74 @@
-import {  loginAPI, signupAPI } from "../authAPI";
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axiosInstance from "../../services/axiosInstance";
 
 export const loginUser = createAsyncThunk(
-  "auth/login",
-  async (
-    credentials = { id: 1, name: "John Doe", email: "john@example.com", password :'password' }
-  ) => {
-    //   const res = await axiosInstance.post("/login", credentials);
-    //   localStorage.setItem("token", res.data.token);
-    const res = await loginAPI(credentials);
+  "/auth/login",
+  async ({ credential }) => {
+    const res = await axiosInstance.post("/auth/login", credential);
     return res.data;
   }
 );
 
-export const signupUser = createAsyncThunk("auth/signup", async (data={}) => {
-  //   const res = await axiosInstance.post("/signup", data);
-  const res = await signupAPI();
-  return res.data;
-});
+export const signupUser = createAsyncThunk(
+  "auth/register",
+  async ({ credential }) => {
+    const res = await axiosInstance.post("/auth/register", credential);
+    return res.data;
+  }
+);
+
+const initialState = {
+  user: {
+    token: null,
+    success: false,
+    loading: false,
+    error: false,
+  },
+};
 
 const authSlice = createSlice({
   name: "auth",
-  initialState: { user: null, token: null, loading: false, error: null },
+  initialState,
   reducers: {
     logout: (state) => {
-      state.user = null;
-      state.token = null;
+      state.user.token = null;
+      state.user.success = false;
+      state.user.loading = false;
       localStorage.removeItem("token");
+      localStorage.removeItem("expiryTime");
     },
   },
   extraReducers: (builder) => {
     builder
+      .addCase(loginUser.pending, (state) => {
+        state.user.token = null;
+        state.user.success = false;
+        state.user.loading = true;
+      })
       .addCase(loginUser.fulfilled, (state, action) => {
-        state.user = action.payload.user;
-        state.token = action.payload.token;
+        state.user.token = action.payload.data?.token;
+        state.user.success = action.payload.success;
+        state.user.loading = false;
+      })
+      .addCase(loginUser.rejected, (state) => {
+        state.user.token = null;
+        state.user.success = false;
+        state.user.loading = false;
+      })
+      .addCase(signupUser.pending, (state) => {
+        state.user.token = null;
+        state.user.success = false;
+        state.user.loading = true;
       })
       .addCase(signupUser.fulfilled, (state, action) => {
-        // Optional: auto-login after signup
+        state.user.token = action.payload.data?.token;
+        state.user.success = action.payload.success;
+        state.user.loading = false;
+      })
+      .addCase(signupUser.rejected, (state) => {
+        state.user.token = null;
+        state.user.success = false;
+        state.user.loading = false;
       });
   },
 });

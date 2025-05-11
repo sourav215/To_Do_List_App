@@ -1,13 +1,94 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { MdAddCircleOutline } from "react-icons/md";
 import { CiFilter } from "react-icons/ci";
 
 import Modal from "./Modal";
 import Todo from "./Todo";
 import StatusContainer from "../CustomComponents/StatusContainer";
+import { useSearchParams } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { getTodos } from "../../redux/todo/todosSlice";
+
+const FilterDropdown = ({ searchParams, setSearchParams }) => {
+  const [completionStatus, setCompletionStatus] = useState("all");
+  const [isOpen, setIsOpen] = useState(false);
+  const toggleDropdown = () => {
+    setIsOpen(!isOpen);
+  };
+  const handleSelectOption = (option) => {
+    const prevParams = Object.fromEntries([...searchParams]);
+    if (option === "all") {
+      delete prevParams.status;
+      setSearchParams({ ...prevParams });
+    } else {
+      setSearchParams({ ...prevParams, status: option });
+    }
+    setCompletionStatus(option);
+    setIsOpen(false);
+  };
+
+  return (
+    <div className="flex gap-3 w-[100px] ml-auto justify-end align-bottom mt-2">
+      <div>
+        <StatusContainer status={completionStatus} />
+      </div>
+      <div className="relative inline-block">
+        <button
+          type="submit"
+          className="px-1 py-1 text-sm font-medium text-center inline-flex items-center text-gray-500 bg-white rounded-lg hover:bg-white hover:text-cyan-500 focus:outline-none"
+          onClick={toggleDropdown}
+        >
+          <CiFilter size={16} className="mr-1" /> Status
+        </button>
+       
+
+        {isOpen && (
+          <div className="absolute right-0 top-2 mt-2 w-32 bg-white rounded-lg shadow-lg z-10 text-xs border border-gray-200 overflow-auto">
+            <ul className="space-y-2 py-2 px-4">
+              {["all", "pending", "completed", "progress"].map((option) => (
+                <li
+                  key={option}
+                  onClick={() => {
+                    handleSelectOption(option);
+                  }}
+                  className={`cursor-pointer px-4 py-1 rounded-full w-fit
+                        ${
+                          option === "pending"
+                            ? "bg-blue-200 text-blue-700 hover:bg-blue-300"
+                            : option === "completed"
+                            ? "bg-green-200 text-green-700 hover:bg-green-300"
+                            : option === "progress"
+                            ? "bg-amber-200 text-amber-700 hover:bg-amber-300"
+                            : "bg-purple-200 text-purple-700 hover:bg-purple-300"
+                        }`}
+                >
+                  {option}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
 
 const Todos = () => {
+  const dispatch = useDispatch();
+  const [searchParams, setSearchParams] = useSearchParams({});
   const [isOpen, setIsOpen] = useState(false);
+  const [todoList, setTodoList] = useState([]);
+
+  const todos = useSelector((store) => store.todo.todos?.data);
+
+  useEffect(() => {
+    setTodoList(todos);
+  }, [todos]);
+
+  useEffect(() => {
+    const prevParams = Object.fromEntries([...searchParams]);
+    dispatch(getTodos({ params: { ...prevParams } }));
+  }, [dispatch, searchParams]);
 
   return (
     <div className="flex flex-col">
@@ -26,9 +107,9 @@ const Todos = () => {
             >
               <path
                 stroke="currentColor"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
                 d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"
               />
             </svg>
@@ -52,25 +133,18 @@ const Todos = () => {
         </div>
 
         <div className="mt-10">
-          <div className="w-full flex flex-row-reverse h-10 items-center">
-            <div className="flex gap-1 items-center ml-5">
-              <button
-                type="submit"
-                className="px-1 py-1 text-sm font-medium text-center inline-flex items-center text-gray-500 bg-white rounded-lg hover:bg-white hover:text-cyan-500 focus:outline-none"
-                onClick={() => setIsOpen(true)}
-              >
-                <CiFilter size={16} className="mr-1" /> Status
-              </button>
-            </div>
-            <div>
-              <StatusContainer status={'completed'}/>
-            </div>
-          </div>
-          <Todo />
+          <FilterDropdown
+            searchParams={searchParams}
+            setSearchParams={setSearchParams}
+          />
+
+          {todoList?.map((todo, i) => {
+            return <Todo key={`todo-item-${i}`} info={todo} />;
+          })}
         </div>
       </div>
 
-      <Modal isOpen={isOpen} setIsOpen={setIsOpen} isNew={true} />
+      {isOpen && <Modal isOpen={isOpen} setIsOpen={setIsOpen} isNew={true} />}
     </div>
   );
 };

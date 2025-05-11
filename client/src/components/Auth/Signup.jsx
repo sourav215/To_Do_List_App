@@ -1,13 +1,13 @@
-import React, { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { FaUserLock } from "react-icons/fa";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { useDispatch, useSelector } from "react-redux";
-import { loginUser } from "../../redux/auth/authSlice";
+import { signupUser } from "../../redux/auth/authSlice";
 import { useNavigate } from "react-router-dom";
 import { LoadingIcon } from "../../assets/svg";
-import Swal from "sweetalert2";
+import { CustomToast } from "../CustomComponents/CustomToast";
 
 const passwordRules =
   /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
@@ -29,9 +29,11 @@ const schema = yup.object().shape({
 
 const Signup = () => {
   const navigate = useNavigate();
-  const user = useSelector((state) => state.auth);
-  const [isLoading, setIsLoading] = useState(false);
-  const [userData, setUserData] = useState(user);
+  const dispatch = useDispatch();
+
+  const token = useSelector((state) => state.auth.user?.token);
+  const isButtonLoading = useSelector((state) => state.auth.user?.loading);
+
   const {
     register,
     handleSubmit,
@@ -41,23 +43,18 @@ const Signup = () => {
   });
 
   const onSubmit = async (data) => {
-    console.log("Form Data:", data);
-    try {
-      await loginUser(data);
-      Swal.fire({
-        position: "top-end",
-        icon: "success",
-        text: "Signup Successful",
-        showConfirmButton: false,
-        timer: 1500,
-      });
-      navigate("/login");
-    } catch (error) {}
+    dispatch(signupUser({ credential: data }));
   };
+
   useEffect(() => {
-    setUserData(user);
-    console.log(user);
-  }, [user]);
+    if (token) {
+      localStorage.setItem("token", token);
+      localStorage.setItem("expiryTime", Date.now() + 24 * 60 * 60 * 1000);
+      CustomToast({ type: "success", message: "Sign up successful" });
+      navigate("/");
+    }
+  }, [navigate, token]);
+
   return (
     <div className="flex justify-center min-h-screen">
       <div className="flex max-w-[400px] flex-1 flex-col mt-10 mx-5 px-6 py-12 lg:px-8 shadow rounded-xl bg-white h-fit">
@@ -156,13 +153,13 @@ const Signup = () => {
             <div>
               <button
                 type="submit"
-                disabled={isLoading}
+                disabled={isButtonLoading}
                 className={`flex w-full justify-center rounded-md bg-cyan-400 px-3 py-1.5 text-sm/6 font-semibold text-white shadow-xs hover:bg-cyan-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-400 min-h-10 ${
-                  !isLoading ? "cursor-pointer" : "cursor-not-allowed"
+                  !isButtonLoading ? "cursor-pointer" : "cursor-not-allowed"
                 }`}
               >
-                {isLoading && <LoadingIcon />}
-                {isLoading ? "Loading..." : "Sign Up"}
+                {isButtonLoading && <LoadingIcon />}
+                {isButtonLoading ? "Loading..." : "Sign Up"}
               </button>
             </div>
             <div>

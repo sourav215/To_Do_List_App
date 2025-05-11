@@ -13,7 +13,8 @@ export const getTodos = async (
   res: Response
 ): Promise<void> => {
   try {
-    const todos = await TodoModel.find({ userId: req.user?.id });
+    const filter = { userId: req.user?.id, ...req.query };
+    const todos = await TodoModel.find(filter);
     return sendResponse(
       res,
       200,
@@ -35,10 +36,12 @@ export const createTodo = async (
   res: Response
 ): Promise<void> => {
   try {
-    const { title } = req.body;
+    const { title, description, end_date } = req.body;
     const todo = await TodoModel.create({
       userId: req.user?.id,
       title: title,
+      description,
+      end_date: new Date(end_date),
     });
 
     return sendResponse(
@@ -101,7 +104,14 @@ export const deleteTodo = async (
       return;
     }
 
-    sendResponse(res, 200, true, "Todo deleted successfully", null, null);
+    sendResponse(
+      res,
+      200,
+      true,
+      "Todo deleted successfully",
+      { _id: id },
+      null
+    );
   } catch (error) {
     sendResponse(res, 500, false, "Failed to delete todo", null, {
       code: ErrorCode.INTERNAL_ERROR,

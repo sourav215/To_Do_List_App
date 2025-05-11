@@ -1,10 +1,13 @@
-import React, { useState } from "react";
+import React, { useEffect } from "react";
 import { FaUserLock } from "react-icons/fa";
 import { LoadingIcon } from "../../assets/svg";
 import { useNavigate } from "react-router-dom";
 import * as yup from "yup";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
+import { useDispatch, useSelector } from "react-redux";
+import { loginUser } from "../../redux/auth/authSlice";
+import { CustomToast } from "../CustomComponents/CustomToast";
 
 const passwordRules =
   /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
@@ -24,8 +27,11 @@ const schema = yup.object().shape({
 });
 
 const Login = () => {
-  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  const token = useSelector((state) => state.auth.user?.token);
+  const isButtonLoading = useSelector((state) => state.auth.user?.loading);
 
   const {
     register,
@@ -35,9 +41,18 @@ const Login = () => {
     resolver: yupResolver(schema),
   });
 
-  const onSubmit = (data) => {
-    console.log(data);
+  const onSubmit = async (data) => {
+    dispatch(loginUser({ credential: data }));
   };
+
+  useEffect(() => {
+    if (token) {
+      localStorage.setItem("token", token);
+      localStorage.setItem("expiryTime", Date.now() + 24 * 60 * 60 * 1000);
+      CustomToast({ type: "success", message: "Login successful" });
+      navigate("/");
+    }
+  }, [token]);
 
   return (
     <div className="flex justify-center min-h-screen">
@@ -98,13 +113,13 @@ const Login = () => {
             <div>
               <button
                 type="submit"
-                disabled={isLoading}
+                disabled={isButtonLoading}
                 className={`flex w-full justify-center rounded-md bg-cyan-400 px-3 py-1.5 text-sm/6 font-semibold text-white shadow-xs hover:bg-cyan-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-400 min-h-10 ${
-                  !isLoading ? "cursor-pointer" : "cursor-not-allowed"
+                  !isButtonLoading ? "cursor-pointer" : "cursor-not-allowed"
                 }`}
               >
-                {isLoading && <LoadingIcon />}
-                {isLoading ? "Loading..." : "Sign Up"}
+                {isButtonLoading && <LoadingIcon />}
+                {isButtonLoading ? "Loading..." : "Login"}
               </button>
             </div>
             <div>
@@ -114,7 +129,7 @@ const Login = () => {
                   className="cursor-pointer text-cyan-500"
                   onClick={() => navigate("/signup")}
                 >
-                  Login
+                  Sign up
                 </span>
               </p>
             </div>

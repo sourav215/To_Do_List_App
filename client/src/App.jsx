@@ -5,14 +5,16 @@ import NotFound from "./components/NotFoundPage/NotFound";
 import Signup from "./components/Auth/Signup";
 import ProtectedRoute from "./components/Auth/ProtectedRoute";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const router = createBrowserRouter([
   {
     path: "/",
     element: (
-      // <ProtectedRoute>
+      <ProtectedRoute>
         <Todos />
-      // </ProtectedRoute>
+      </ProtectedRoute>
     ),
     errorElement: <NotFound />,
   },
@@ -35,6 +37,7 @@ function App() {
   return (
     <div className="bg-cyan-50">
       <RouterProvider router={router} />
+      <ToastContainer />
     </div>
   );
 }

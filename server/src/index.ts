@@ -2,6 +2,7 @@ import dotenv from "dotenv";
 dotenv.config();
 import express, { Request, Response } from "express";
 import timeout from "connect-timeout";
+import cors from "cors";
 import { CONFIG } from "./config/config";
 import { connectDatabase } from "./config/db";
 
@@ -14,6 +15,7 @@ import timeoutError from "./middlewares/timeoutError.middleware";
 // Middlewares
 const app = express();
 app.use(express.json());
+app.use(cors());
 app.use(timeout("20s"));
 
 // Routes
@@ -28,7 +30,6 @@ app.use((req: Request, res: Response) => {
 
 // Error-handling middleware
 app.use(timeoutError);
-
 
 app.listen(CONFIG.PORT, async () => {
   try {

@@ -8,7 +8,7 @@ export const generateToken = (
   role: string
 ): string => {
   return jwt.sign({ id, userCode, role }, CONFIG.JWT_SECRET, {
-    expiresIn: "1h",
+    expiresIn: "24h",
   }) as string;
 };
 

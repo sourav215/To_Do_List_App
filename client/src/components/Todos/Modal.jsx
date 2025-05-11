@@ -1,7 +1,8 @@
 import { useRef } from "react";
-import CustomDatePicker from "../DatePicker/CustomDatePicker";
+import TodoCreator from "../TodoCreator/TodoCreator";
+import UpdateTodo from "../TodoCreator/UpdateTodo";
 
-export default function Modal({ isOpen, setIsOpen }) {
+export default function Modal({ isOpen, setIsOpen, isNew, info={} }) {
   const modalRef = useRef();
 
   const handleBackdropClick = (e) => {
@@ -19,11 +20,13 @@ export default function Modal({ isOpen, setIsOpen }) {
         >
           <div
             ref={modalRef}
-            className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md"
+            className="bg-white rounded-3xl shadow-lg p-5 w-full max-w-md xs:w-full lg:min-w-[600px] lg:max-w-[600px] m-4"
           >
-            <h2 className="text-xl font-semibold mb-4">Modal Title</h2>
-
-            <CustomDatePicker />
+            {isNew ? (
+              <TodoCreator setIsOpen={setIsOpen} />
+            ) : (
+              <UpdateTodo setIsOpen={setIsOpen} info={info} />
+            )}
           </div>
         </div>
       )}
