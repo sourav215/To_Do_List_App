@@ -188,6 +188,7 @@ const Todo = ({ info }) => {
   const {
     _id,
     title,
+    description,
     completed,
     status,
     end_date = new Date().getDate(),
@@ -219,6 +220,15 @@ const Todo = ({ info }) => {
           {!isEditModalOpen && (
             <OpenMenu setIsEditModalOpen={setIsEditModalOpen} id={_id} />
           )}
+        </div>
+        <div>
+          <h4
+            className={`text-sm ${
+              isCompleted ? "text-gray-400 opacity-50" : "text-gray-900"
+            }`}
+          >
+            {description}
+          </h4>
         </div>
         <div
           className={`flex gap-5 mt-1 ${
